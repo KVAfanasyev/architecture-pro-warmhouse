@@ -1,0 +1,54 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person_Ext(user, "Пользователь", "Внешние системы и пользователи")
+
+System_Ext(device, "Устройства умного дома", "Датчики, лампы, камеры")
+System_Ext(partner, "Партнёрские системы", "Производители устройств")
+
+System_Boundary(smart_home, "Экосистема Умного Дома - SaaS") {
+    Container(gw, "API Gateway", "API Gateway")
+    Container(msg, "Брокер сообщений", "RabbitMQ/Kafka", "Брокер сообщений")
+
+    Container(auth, "User Auth Service", "Микросервис", "Аутентификация пользователей")
+    Container(dm, "Device Management Service", "Микросервис", "Управление устройствами")
+    Container(tel, "Telemetry & Data Service", "Микросервис", "Сбор телеметрии")
+    Container(cmd, "Command & Control Service", "Микросервис", "Управление командами")
+    Container(auto, "Automation Scenarios Service", "Микросервис", "Автоматизация сценариев")
+    Container(legacy, "Legacy Adapter", "Микросервис", "Адаптер для устаревших систем")
+
+    ContainerDb(db_auth, "База пользователей", "PostgreSQL", "Хранение данных пользователей")
+    ContainerDb(db_device, "Реестр устройств", "PostgreSQL", "Реестр устройств")
+    ContainerDb(db_telem, "Хранилище телеметрии", "TimescaleDB", "Хранение телеметрии")
+    ContainerDb(db_auto, "Хранилище сценариев", "PostgreSQL", "Хранение сценариев автоматизации")
+}
+
+' Внешние связи
+Rel(user, gw, "Использует")
+Rel(user, legacy, "Использует","Монолит")
+Rel(device, tel, "Телеметрия")
+Rel(device, dm, "Регистрация, Чтение конфигурации")
+Rel(partner, dm, "Синхронизация каталога устройств","Например, с целью описать формат ответа конфигурации")
+
+' Внутренние синхронные связи
+Rel(gw, auth, "Синхронные запросы HTTP/gRPC")
+Rel(gw, dm, "Чтение состояния устройства")
+Rel(gw, tel, "Синхронные запросы","Получение истории изменений")
+Rel(gw, cmd, "Синхронные запросы","Отправка команд на включение/выключение/настройку")
+Rel(gw, auto, "Синхронные запросы","Управление планировщиком")
+
+' Внутренние асинхронные связи
+Rel(tel, msg, "События изменений", "например, 'движение detected'")
+Rel(auto, msg, "Подписка на события","Например, события телеметрии")
+Rel(auto, cmd, "Отправка команд","Отправка команд на включение/выключение/настройку")
+Rel(cmd, msg, "Команды устройствам", "например, 'включить свет'")
+Rel(legacy, msg, "Преобразование протоколов")
+Rel(dm,msg, "Команды на устройства","Получить")
+
+' Связи с базами данных
+Rel(dm, db_device, "Чтение/запись")
+Rel(auth, db_auth, "Чтение/запись")
+Rel(tel, db_telem, "Запись")
+Rel(auto, db_auto, "Чтение/запись")
+
+@enduml
