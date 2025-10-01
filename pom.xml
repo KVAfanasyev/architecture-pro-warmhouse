@@ -1,0 +1,12 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.smarthome</groupId>
+    <artifactId>architecture-pro-warmhouse</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>apps/devicemanagement</module>
+        <module>apps/LegacyAdapter</module>
+    </modules>
+</project>

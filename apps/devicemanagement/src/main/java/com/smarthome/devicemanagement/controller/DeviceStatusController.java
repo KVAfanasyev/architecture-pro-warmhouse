@@ -36,4 +36,5 @@ public class DeviceStatusController {
         deviceStatusService.updateDeviceStatus(deviceId, status);
         return ResponseEntity.ok().build();
     }
+
 }
