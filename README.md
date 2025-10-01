@@ -173,4 +173,19 @@ docker compose -f compose.yaml -f ./apps/devicemanagement/compose.yaml -f ./apps
 ### **Что нужно сделать**
 Сервисы написаны исключительно в виде примера.
 docker compose -f compose.yaml -f ./apps/devicemanagement/compose.yaml -f ./apps/LegacyAdapter/compose.yaml up --build
-В результате у вас должны быть созданы Dockerfiles и docker-compose для запуска микросервисов. 
+В результате у вас должны быть созданы Dockerfiles и docker-compose для запуска микросервисов.
+
+### Swagger
+available on address
+//http://localhost:8080/swagger-ui/index.html
+//http://localhost:8081/swagger-ui/index.html
+
+### API DOCs
+After run docker compose we can generate API documentation
+mvn springdoc-openapi:generate
+
+### Rubbit MQ
+http://localhost:15672/
+
+### установка ping в контейнер
+apt-get update && apt-get install -y iputils-ping
