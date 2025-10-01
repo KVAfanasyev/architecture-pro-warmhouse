@@ -1,0 +1,161 @@
+@startuml
+!define ENTITY class
+!define PRIMARY_KEY(x) <b>**{x}</b>
+!define FOREIGN_KEY(x) <color:blue><i>{x}</i></color>
+
+hide methods
+hide stereotypes
+
+skinparam groupInheritance 2
+skinparam linetype ortho
+
+title ER Diagram for Device Management Service
+
+' === Основные сущности из миграции ===
+
+ENTITY device_type {
+  PRIMARY_KEY(id): VARCHAR(36)
+  --
+  name: VARCHAR(100) NOT NULL
+  manufacturer: VARCHAR(100) NOT NULL
+  protocol_type: VARCHAR(50) NOT NULL
+  config_schema: JSONB
+  version: VARCHAR(20)
+  created_at: TIMESTAMP
+  updated_at: TIMESTAMP
+}
+
+ENTITY device {
+  id VARCHAR(36) PRIMARY KEY,
+
+  --
+  FOREIGN_KEY(device_type_id): VARCHAR(36) NOT NULL
+  FOREIGN_KEY(location_id): VARCHAR(36)
+    serial_number VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(200) NOT NULL,
+    status VARCHAR(20) DEFAULT 'OFFLINE',
+    last_seen TIMESTAMP,
+    ip_address VARCHAR(45),
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+}
+
+ENTITY device_credentials {
+  PRIMARY_KEY(id): VARCHAR(36)
+  --
+  FOREIGN_KEY(device_id): VARCHAR(36) UNIQUE NOT NULL
+  auth_token: VARCHAR(500) NOT NULL
+  public_key TEXT,
+  is_active: BOOLEAN DEFAULT true
+  expires_at: TIMESTAMP
+  created_at: TIMESTAMP
+}
+
+' === Дополнительные сущности для полной реализации ===
+
+ENTITY user {
+  PRIMARY_KEY(id): VARCHAR(36)
+  --
+  username: VARCHAR(100) UNIQUE NOT NULL
+  email: VARCHAR(255) UNIQUE NOT NULL
+  password_hash: VARCHAR(255)
+  first_name: VARCHAR(100)
+  last_name: VARCHAR(100)
+  is_active: BOOLEAN DEFAULT true
+  created_at: TIMESTAMP
+  updated_at: TIMESTAMP
+}
+
+
+
+ENTITY location {
+  PRIMARY_KEY(id): VARCHAR(36)
+  --
+  FOREIGN_KEY(user_id): VARCHAR(36) NOT NULL
+  name: VARCHAR(200) NOT NULL
+  description: TEXT
+  address: TEXT
+  timezone: VARCHAR(50)
+  metadata: JSONB
+  created_at: TIMESTAMP
+  updated_at: TIMESTAMP
+}
+
+ENTITY user_location_access {
+ FOREIGN_KEY(user_id): VARCHAR(36) NOT NULL
+ FOREIGN_KEY(location_id): VARCHAR(36) NOT NULL
+ access_granted_date: TIMESTAMP
+}
+
+ENTITY device_group {
+  PRIMARY_KEY(id): VARCHAR(36)
+  --
+  FOREIGN_KEY(location_id): VARCHAR(36) NOT NULL
+  name: VARCHAR(200) NOT NULL
+  description: TEXT
+  type: VARCHAR(50)
+  metadata: JSONB
+  created_at: TIMESTAMP
+  updated_at: TIMESTAMP
+}
+
+
+
+ENTITY device_config_history {
+  PRIMARY_KEY(id): VARCHAR(36)
+  --
+  FOREIGN_KEY(device_id): VARCHAR(36) NOT NULL
+  config_version: VARCHAR(50) NOT NULL
+  config_data: JSONB NOT NULL
+  applied_by: VARCHAR(100)
+  status: VARCHAR(20) DEFAULT 'PENDING'
+  created_at: TIMESTAMP
+}
+
+ENTITY device_heartbeat {
+  PRIMARY_KEY(id): VARCHAR(36)
+  --
+  FOREIGN_KEY(device_id): VARCHAR(36) NOT NULL
+  timestamp: TIMESTAMP NOT NULL
+  status: VARCHAR(20) NOT NULL
+  cpu_usage: DECIMAL(5,2)
+  memory_usage: DECIMAL(5,2)
+  network_latency: INTEGER
+  metadata: JSONB
+}
+
+ENTITY device_event {
+  PRIMARY_KEY(id): VARCHAR(36)
+  --
+  FOREIGN_KEY(device_id): VARCHAR(36) NOT NULL
+  event_type: VARCHAR(100) NOT NULL
+  event_data: JSONB
+  severity: VARCHAR(20) DEFAULT 'INFO'
+  source: VARCHAR(100)
+  created_at: TIMESTAMP
+}
+
+' === Связи между сущностями ===
+
+device_type ||--o{ device : "has many"
+
+
+user ||--o{ user_location_access : "access to"
+location ||--o{ user_location_access : "accessed by"
+
+location ||--o{ device_group : "owns"
+location ||--o{ device : "located in"
+
+device ||--|| device_credentials : "has"
+device }o--||device_group : "belongs to"
+
+
+device ||--o{ device_config_history : "has history"
+device ||--o{ device_heartbeat : "sends"
+device ||--o{ device_event : "generates"
+
+' === Индексы для производительности ===
+
+
+@enduml
