@@ -158,11 +158,9 @@
 
 # Задание 5. Работа с docker и docker-compose
 Реализованы самые минимальные примеры взаимодействия
-сборка приложения и запуск осуществляется из корня проекта
-mvn clean package
-Запуск docker compose осуществляется командой
+сборка приложения и запуск осуществляется из директории apps
 
-docker compose -f compose.yaml -f ./apps/devicemanagement/compose.yaml -f ./apps/LegacyAdapter/compose.yaml up --build
+docker compose up --build
 
 
 # **Задание 6. Разработка MVP**
@@ -172,13 +170,13 @@ docker compose -f compose.yaml -f ./apps/devicemanagement/compose.yaml -f ./apps
 который будет управляющие команды отправлять в Rubbit MQ а команды на чтение адресовать к соответсвующему сервису
 ### **Что нужно сделать**
 Сервисы написаны исключительно в виде примера.
-docker compose -f compose.yaml -f ./apps/devicemanagement/compose.yaml -f ./apps/LegacyAdapter/compose.yaml up --build
+docker compose up --build
 В результате у вас должны быть созданы Dockerfiles и docker-compose для запуска микросервисов.
 
 ### Swagger
 available on address
-//http://localhost:8080/swagger-ui/index.html
 //http://localhost:8081/swagger-ui/index.html
+//http://localhost:8082/swagger-ui/index.html
 
 ### API DOCs
 After run docker compose we can generate API documentation

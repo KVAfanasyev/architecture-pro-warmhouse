@@ -6,7 +6,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>apps/devicemanagement</module>
-        <module>apps/LegacyAdapter</module>
+        <module>devicemanagement</module>
+        <module>LegacyAdapter</module>
     </modules>
 </project>
