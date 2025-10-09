@@ -1,0 +1,49 @@
+@startuml DeviceStatusManager_Sequence_Heartbeat
+
+title UML Диаграмма последовательностей: Обработка Heartbeat сообщения
+
+actor "Брокер сообщений" as MessageBroker
+participant "DeviceStatusManager" as DSM
+participant "IMessageConsumer" as Consumer
+participant "IDeviceRepository" as Repository
+participant "IStatusEventPublisher" as Publisher
+participant "DeviceStatus" as Status
+
+MessageBroker -> Consumer: HeartbeatEvent(deviceId, timestamp)
+activate Consumer
+
+Consumer -> DSM: processHeartbeat(event)
+activate DSM
+
+DSM -> Repository: findById(deviceId)
+activate Repository
+
+Repository --> DSM: Optional<Device>
+deactivate Repository
+
+alt Устройство найдено
+  DSM -> Status: updateLastSeen(timestamp)
+  activate Status
+  Status --> DSM: ok
+  deactivate Status
+
+  DSM -> Repository: save(device)
+  activate Repository
+  Repository --> DSM: ok
+  deactivate Repository
+
+  DSM -> Publisher: publishStatusChangedEvent(event)
+  activate Publisher
+  Publisher --> DSM: ok
+  deactivate Publisher
+else Устройство не найдено
+  DSM -> DSM: log warning "Unknown device"
+end
+
+DSM --> Consumer: ack
+deactivate DSM
+
+Consumer --> MessageBroker: ack
+deactivate Consumer
+
+@enduml

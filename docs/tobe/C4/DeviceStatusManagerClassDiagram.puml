@@ -1,0 +1,75 @@
+@startuml DeviceStatusManager_ClassDiagram
+
+title UML Диаграмма классов: Device Status Manager
+
+class DeviceStatusManager {
+  - deviceRepository: IDeviceRepository
+  - messageConsumer: IMessageConsumer
+  - statusEventPublisher: IStatusEventPublisher
+  + getStatus(deviceId: String): DeviceStatusDto
+  - processHeartbeat(heartbeatEvent: HeartbeatEvent): void
+  - handleControlCommand(controlCmd: ControlCommand): void
+}
+
+class DeviceStatus {
+  - deviceId: String
+  - status: StatusEnum
+  - lastSeen: DateTime
+  - metadata: Map<String, Object>
+  + isOnline(): boolean
+  + updateLastSeen(timestamp: DateTime): void
+}
+
+class HeartbeatEvent {
+  - deviceId: String
+  - timestamp: DateTime
+  - payload: String
+}
+
+class ControlCommand {
+  - deviceId: String
+  - command: CommandEnum
+  - parameters: Map<String, Object>
+}
+
+class UpdateStatusCommand {
+  - deviceId: String
+  - newStatus: StatusEnum
+}
+
+class DeviceStatusDto {
+  - deviceId: String
+  - status: StatusEnum
+  - isOnline: boolean
+  - lastSeen: DateTime
+}
+
+interface IDeviceRepository {
+  + findById(deviceId: String): Optional<Device>
+  + save(device: Device): void
+}
+
+interface IMessageConsumer {
+  + subscribeToHeartbeats(): void
+  + subscribeToControlCommands(): void
+}
+
+interface IStatusEventPublisher {
+  + publishStatusChangedEvent(event: StatusChangedEvent): void
+}
+
+' Агрегация/Композиция: StatusManager использует Repository и Messaging компоненты
+DeviceStatusManager --> IDeviceRepository
+DeviceStatusManager --> IMessageConsumer
+DeviceStatusManager --> IStatusEventPublisher
+
+' Зависимости: Методы работают с DTO и командами
+DeviceStatusManager ..> DeviceStatusDto
+DeviceStatusManager ..> UpdateStatusCommand
+DeviceStatusManager ..> HeartbeatEvent
+DeviceStatusManager ..> ControlCommand
+
+' Ассоциация: DeviceStatus связан с агрегатом Device (из другой bounded context)
+DeviceStatus --> Device : Aggregation
+
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Компонентная диаграмма микросервиса Device Management Service
+
+Person_Ext(api_gateway, "API Gateway", "Внешний API шлюз")
+System_Ext(device, "Устройство", "IoT устройство")
+System_Ext(message_broker, "Брокер сообщений", "Система обмена сообщениями")
+System_Ext(partner, "Партнерские системы", "Производители устройств")
+System_Ext(db, "Реестр устройств", "PostgreSQL база данных")
+
+System_Boundary(device_mgmt_service, "Микросервис: Device Management Service") {
+    Component(api_controller, "API Controller", "REST/gRPC", "Обработка API запросов")
+    Component(device_registration, "Device Registration", "Component", "Регистрация устройств")
+    Component(device_status, "Device Status Manager", "Component", "Управление статусом устройств")
+    Component(device_auth, "Device Auth", "Component", "Аутентификация устройств")
+    Component(config_push, "Configuration Push", "Component", "Push конфигурации")
+    Component(device_type_reg, "Device Type Registration", "Component", "Регистрация типа устройств")
+}
+
+' Внешние связи
+Rel(api_gateway, api_controller, "HTTP", "REST API получение статуса устройства")
+Rel(api_gateway, config_push, "HTTP", "Сохранение конфигурации устройств")
+Rel(device, device_auth, "HTTP/MQTT", "Аутентификация и связь, чтение конфигурации")
+Rel(partner, device_type_reg, "Синхронизация каталога устройст","Например, с целью описать формат ответа конфигурации")
+
+' Внутренние связи микросервиса
+Rel(api_controller, device_registration, "Вызовы", "Регистрация устройств")
+Rel(api_controller, device_status, "Запросы", "Получение статуса и параметров устройств")
+Rel(device_auth, device_status, "Обновления", "Обновление статуса после аутентификации")
+
+' Связи с брокером сообщений
+Rel(device_status, message_broker,"События 'heartbeat", "Получение heartbeat")
+Rel(device_status, message_broker,"Чтение", "команд на включение/выключение/настройку")
+Rel(config_push, message_broker, "Команды конфигурации", "Push конфигурации")
+
+' Связи с базой данных
+Rel(device_registration, db, "Чтение/запись", "CRUD операции")
+Rel(device_status, db, "Обновление статуса", "Изменение статуса устройств")
+Rel(device_auth, db, "Проверка учетных данных", "Валидация учетных данных")
+Rel(device_type_reg, db, "Сохранение типа устройств", "Сохранение параметров взаимодействия с устройством")
+@enduml

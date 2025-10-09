@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  device-management:
+    build: ./apps/devicemanagement
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/device_management
+      SPRING_DATASOURCE_USERNAME: smartHome
+      SPRING_DATASOURCE_PASSWORD: password123
+      LOGGING_LEVEL_COM_EXAMPLE: INFO
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: admin
+      RABBITMQ_PASSWORD: admin123
+      RABBITMQ_VIRTUAL_HOST: /
+      RABBITMQ_CONNECTION_TIMEOUT: 10000
+      RABBITMQ_REPLY_TIMEOUT: 60000
+      RABBITMQ_LISTENER_AUTO_STARTUP: true
+      RABBITMQ_DIRECT_LISTENER_AUTO_STARTUP: true
+    ports:
+      - "8080:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network

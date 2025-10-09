@@ -1,0 +1,45 @@
+@startuml DeviceStatusManager_Sequence_GetStatus
+
+title UML Диаграмма последовательностей: Запрос статуса устройства через API
+
+actor "API Gateway" as API
+participant "APIController" as Controller
+participant "DeviceStatusManager" as DSM
+participant "IDeviceRepository" as Repository
+participant "DeviceStatus" as Status
+participant "DeviceStatusDto" as DTO
+
+API -> Controller: GET /api/v1/devices/{id}/status
+activate Controller
+
+Controller -> DSM: getStatus(deviceId)
+activate DSM
+
+DSM -> Repository: findById(deviceId)
+activate Repository
+
+Repository --> DSM: Optional<Device>
+deactivate Repository
+
+alt Устройство найдено
+  DSM -> Status: isOnline()
+  activate Status
+  Status --> DSM: boolean
+  deactivate Status
+
+  DSM -> DTO: new DeviceStatusDto(device, isOnline)
+  activate DTO
+  DTO --> DSM: statusDto
+  deactivate DTO
+
+  DSM --> Controller: DeviceStatusDto
+else Устройство не найдено
+  DSM --> Controller: 404 Not Found
+end
+
+deactivate DSM
+
+Controller --> API: 200 OK + JSON
+deactivate Controller
+
+@enduml

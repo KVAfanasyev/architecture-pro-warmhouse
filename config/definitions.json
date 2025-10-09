@@ -1,0 +1,77 @@
+{
+  "users": [
+    {
+      "name": "admin",
+      "password": "admin123",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "queues": [
+    {
+      "name": "device.heartbeat.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "device.configuration.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "device.heartbeat.exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "device.configuration.exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "device.heartbeat.exchange",
+      "vhost": "/",
+      "destination": "device.heartbeat.queue",
+      "destination_type": "queue",
+      "routing_key": "heartbeat",
+      "arguments": {}
+    },
+    {
+      "source": "device.configuration.exchange",
+      "vhost": "/",
+      "destination": "device.configuration.queue",
+      "destination_type": "queue",
+      "routing_key": "device.configuration.static",
+      "arguments": {}
+    }
+  ]
+}

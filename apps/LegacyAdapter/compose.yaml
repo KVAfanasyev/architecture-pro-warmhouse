@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  legacy-adapter:
+    build: ./apps/LegacyAdapter
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      LOGGING_LEVEL_COM_EXAMPLE: INFO
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: admin
+      RABBITMQ_PASSWORD: admin123
+      RABBITMQ_VIRTUAL_HOST: /
+      RABBITMQ_CONNECTION_TIMEOUT: 10000
+      RABBITMQ_REPLY_TIMEOUT: 60000
+      RABBITMQ_LISTENER_AUTO_STARTUP: true
+      RABBITMQ_DIRECT_LISTENER_AUTO_STARTUP: true
+    ports:
+      - "8081:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+
+networks:
+  app-network:
+    driver: bridge
